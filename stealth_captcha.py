@@ -79,8 +79,16 @@ class CaptchaSolver:
 
     # ─── Rotate Captcha (rotate-captcha-crack - CNN) ────────────
     def _solve_rotate(self, params):
-        """Rotate captcha using CNN angle prediction (git clone + pip install .)."""
+        """Rotate captcha using CNN angle prediction (RotNetR, 6.6° error)."""
         try:
+            # Need Python 3.11-3.13 for rotate-captcha-crack
+            import sys as _sys
+            _ver = f"{_sys.version_info.major}.{_sys.version_info.minor}"
+            # Try to load from venv if not installed in current env
+            _rotate_path = "/tmp/rotate_env/lib/python3.13/site-packages"
+            if _rotate_path not in _sys.path:
+                _sys.path.insert(0, _rotate_path)
+            
             from rotate_captcha_crack.model import RotNetR
             from rotate_captcha_crack.utils import process_captcha
             import torch
@@ -90,29 +98,31 @@ class CaptchaSolver:
             if not image:
                 return {"success": False, "error": "Need image path"}
 
-            model_path = params.get("model_path", "")
-            model = RotNetR(cls_num=128, train=False)
-            if model_path and os.path.exists(model_path):
-                model.load_state_dict(torch.load(model_path, weights_only=True))
-            else:
-                # Try to find default model
-                from rotate_captcha_crack.model import WhereIsMyModel
-                finder = WhereIsMyModel(model).with_index(-1)
-                mp = finder.model_dir / "best.pth"
-                if mp.exists():
-                    model.load_state_dict(torch.load(mp, weights_only=True))
-                else:
-                    return {"success": False, "error": "No pretrained model found. Download from github.com/lumina37/rotate-captcha-crack/releases"}
-            
-            model.eval()
+            # Make image square for RotNetR
             img = Image.open(image)
-            img_ts = process_captcha(img)
+            w, h = img.size
+            size = min(w, h)
+            left = (w - size) // 2
+            top = (h - size) // 2
+            img_square = img.crop((left, top, left + size, top + size))
+
+            model_path = params.get("model_path") or "/tmp/rotate_captcha_crack/models/RotNetR/RotNetR/250101_23_38_54_001/best.pth"
+            if not os.path.exists(model_path):
+                return {"success": False, "error": f"Model not found at {model_path}"}
+            
+            model = RotNetR(cls_num=128, train=False)
+            state = torch.load(model_path, map_location="cpu", weights_only=True)
+            model.load_state_dict(state)
+            model.eval()
+            
+            img_ts = process_captcha(img_square)
             with torch.no_grad():
-                factor = model.predict(img_ts)
-                angle = factor * 360
-            return {"success": True, "result": {"angle": angle, "factor": factor}, "solver": "RotNetR"}
-        except ImportError:
-            return {"success": False, "error": "rotate-captcha-crack not installed", "solver": None}
+                angle_factor = model.predict(img_ts)
+                angle = angle_factor * 360
+            
+            return {"success": True, "result": {"angle": angle, "factor": float(angle_factor)}, "solver": "RotNetR"}
+        except ImportError as e:
+            return {"success": False, "error": f"rotate-captcha-crack not installed: {e}", "solver": None}
         except Exception as e:
             return {"success": False, "error": str(e), "solver": "RotNetR"}
 
