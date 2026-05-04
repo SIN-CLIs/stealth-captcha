@@ -1,0 +1,46 @@
+# Stealth Suite Workspace — Teil des SIN-CLIs Ökosystems
+repos:
+  - name: stealth-runner
+    path: ~/dev/stealth-runner
+    role: orchestrator
+    url: https://github.com/SIN-CLIs/stealth-runner
+  - name: cua-touch
+    path: ~/dev/cua-touch
+    role: act-all
+    url: https://github.com/SIN-CLIs/cua-touch
+  - name: ax-graph
+    path: ~/dev/ax-graph
+    role: ax-indexer
+    url: https://github.com/SIN-CLIs/ax-graph
+  - name: skylight-cli
+    path: ~/dev/skylight-cli
+    role: act-legacy
+    url: https://github.com/SIN-CLIs/skylight-cli
+  - name: screen-follow
+    path: ~/dev/screen-follow
+    role: verify
+    url: https://github.com/SIN-CLIs/screen-follow
+  - name: macos-ax-cli
+    path: ~/dev/macos-ax-cli
+    role: scan
+    url: https://github.com/SIN-CLIs/macos-ax-cli
+  - name: playstealth-cli
+    path: ~/dev/playstealth-cli
+    role: hide
+    url: https://github.com/SIN-CLIs/playstealth-cli
+  - name: unmask-cli
+    path: ~/dev/unmask-cli
+    role: sense
+    url: https://github.com/SIN-CLIs/unmask-cli
+  - name: stealth-captcha
+    path: ~/dev/stealth-captcha
+    role: captcha
+    url: https://github.com/SIN-CLIs/stealth-captcha
+  - name: stealth-skills
+    path: ~/dev/stealth-skills
+    role: skills
+    url: https://github.com/SIN-CLIs/stealth-skills
+click_mechanism: AXPress (via cua-touch)
+chrome_accessibility: playstealth
+forbidden: [webauto-nodriver, CDP Page.navigate, document.querySelector().click(), pyautogui, pynput]
+
