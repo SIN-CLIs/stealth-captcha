@@ -2,3 +2,6 @@
 # External nested repos (managed separately)
 solvers/geetest-slider/
 solvers/geetest-slider/.git
+
+__pycache__/
+*.pyc
