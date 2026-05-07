@@ -6,3 +6,6 @@ solvers/geetest-slider/.git
 __pycache__/
 *.pyc
 solvers/geetest-slider
+
+# GitNexus Knowledge Graph Index
+.gitnexus/
